@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kuis dengan Tepuk Tangan</title>
+<style>
+body {
+  font-family: Arial;
+  background: #eaf2ff;
+  text-align: center;
+  padding: 40px 15px;
+}
+.kotak {
+  background: white;
+  padding: 25px;
+  border-radius: 18px;
+  max-width: 450px;
+  margin: auto;
+  box-shadow: 0 5px 20px #aaa;
+}
+button {
+  display: block;
+  width: 100%;
+  padding: 15px;
+  margin: 10px 0;
+  border: none;
+  border-radius: 10px;
+  background: #536dfe;
+  color: white;
+  font-size: 17px;
+  cursor: pointer;
+}
+#hasil {
+  font-size: 22px;
+  font-weight: bold;
+  margin: 20px;
+}
+</style>
+</head>
+
+<body>
+<div class="kotak">
+<h2>🎓 KUIS IPA SMP</h2>
+
+<h3 id="soal">Organ yang memompa darah adalah?</h3>
+
+<div id="pilihan">
+<button onclick="jawab(0)">A. Paru-paru</button>
+<button onclick="jawab(1)">B. Jantung</button>
+<button onclick="jawab(2)">C. Lambung</button>
+<button onclick="jawab(3)">D. Ginjal</button>
+</div>
+
+<div id="hasil"></div>
+<button onclick="berikutnya()">Soal Berikutnya ➜</button>
+</div>
+
+<script>
+const data = [
+{
+ soal: "Organ yang memompa darah adalah?",
+ pilihan: ["A. Paru-paru","B. Jantung","C. Lambung","D. Ginjal"],
+ benar: 1
+},
+{
+ soal: "Tempat pertukaran oksigen adalah?",
+ pilihan: ["A. Paru-paru","B. Lambung","C. Usus","D. Hati"],
+ benar: 0
+},
+{
+ soal: "Organ utama pencernaan yang menyerap sari makanan adalah?",
+ pilihan: ["A. Kerongkongan","B. Lambung","C. Usus halus","D. Mulut"],
+ benar: 2
+}
+];
+
+let nomor = 0;
+let selesai = false;
+let audio;
+
+function tepukTangan() {
+  const AudioContext = window.AudioContext ||
+                       window.webkitAudioContext;
+
+  audio = audio || new AudioContext();
+  if (audio.state === "suspended") audio.resume();
+
+  const waktu = audio.currentTime;
+
+  // Membuat bunyi tepuk tangan
+  for (let i = 0; i < 100; i++) {
+    const durasi = 0.03 + Math.random() * 0.04;
+    const buffer = audio.createBuffer(
+      1, audio.sampleRate * durasi, audio.sampleRate
+    );
+
+    const isi = buffer.getChannelData(0);
+
+    for (let j = 0; j < isi.length; j++) {
+      isi[j] = (Math.random() * 2 - 1) *
+               (1 - j / isi.length);
+    }
+
+    const sumber = audio.createBufferSource();
+    const volume = audio.createGain();
+
+    sumber.buffer = buffer;
+    volume.gain.value = 0.15 + Math.random() * 0.2;
+
+    sumber.connect(volume);
+    volume.connect(audio.destination);
+
+    sumber.start(waktu + Math.random() * 1.5);
+  }
+}
+
+function tampilkan() {
+  selesai = false;
+  document.getElementById("soal").innerText =
+    data[nomor].soal;
+
+  let html = "";
+
+  data[nomor].pilihan.forEach((p, i) => {
+    html += `<button onclick="jawab(${i})">${p}</button>`;
+  });
+
+  document.getElementById("pilihan").innerHTML = html;
+  document.getElementById("hasil").innerText = "";
+}
+
+function jawab(pilihan) {
+  if (selesai) return;
+  selesai = true;
+
+  if (pilihan === data[nomor].benar) {
+    document.getElementById("hasil").innerText =
+      "🎉 BENAR! HEBAT! 👏👏👏";
+
+    document.getElementById("hasil").style.color = "green";
+
+    // SUARA TEPUK TANGAN OTOMATIS
+    tepukTangan();
+
+  } else {
+    document.getElementById("hasil").innerText =
+      "❌ Belum tepat, tetap semangat!";
+    document.getElementById("hasil").style.color = "red";
+  }
+}
+
+function berikutnya() {
+  if (nomor < data.length - 1) {
+    nomor++;
+    tampilkan();
+  } else {
+    document.querySelector(".kotak").innerHTML =
+      "<h1>🏆 KUIS SELESAI!</h1>" +
+      "<p>Terima kasih sudah belajar!</p>" +
+      '<button onclick="location.reload()">Ulangi Kuis</button>';
+  }
+}
+</script>
+</body>
+</html>
